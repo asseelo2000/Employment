@@ -16,13 +16,13 @@ Follow these steps to manage your branches and ensure proper synchronization wit
 
 3. **Merge Main into Your Feature Branch**:
     ```bash
-    git checkout aseel
+    git checkout dev
     git merge main
     ```
 
 4. **Push Your Feature Branch to the Remote Repository**:
     ```bash
-    git push origin aseel
+    git push origin dev
     ```
 
 Make sure to resolve any merge conflicts during the process and test your changes before pushing.
