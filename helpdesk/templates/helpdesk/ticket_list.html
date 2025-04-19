@@ -1,0 +1,772 @@
+{% extends "helpdesk/base.html" %}
+
+{% load i18n humanize static in_list %}
+
+{% block helpdesk_title %}{% trans "Tickets" %}{% endblock %}
+
+{% block helpdesk_head %}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Timeline 3 CSS -->
+    {% if helpdesk_settings.HELPDESK_USE_CDN %}
+    <link title="timeline-styles" rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+    {% else %}
+    <link title="timeline-styles" rel="stylesheet" href="{% static 'helpdesk/vendor/timeline3/css/timeline.css' %}">
+    {% endif %}
+    <style>
+        /* Custom styles for form controls */
+        .mass-action-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .mass-action-container label {
+            margin-bottom: 0;
+            font-weight: 500;
+        }
+        .mass-action-container .select2-container {
+            min-width: 200px;
+        }
+        .mass-action-container .select2-user-container {
+            min-width: 250px;
+            display: none; /* Ensure user select is hidden by default */
+        }
+        .mass-action-container .btn {
+            white-space: nowrap;
+        }
+        /* Adjust Select2 dropdown styles */
+        .select2-container--default .select2-selection--single {
+            height: 35px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 35px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 35px;
+        }
+    </style>
+{% endblock %}
+
+{% block h1_title %}Tickets
+    {% if from_saved_query %} [{{ saved_query.title }}]{% endif %}
+{% endblock %}
+
+{% block helpdesk_breadcrumb %}
+    <li class="breadcrumb-item">
+        <a href="{% url 'helpdesk:list' %}">{% trans "Tickets" %}</a>
+    </li>
+    {% if from_saved_query and saved_query.user == user %}
+        <li class="breadcrumb-item">{% trans "Saved Query" %}</li>
+        <li class="breadcrumb-item active">{{ saved_query.title }}</li>
+    {% else %}
+        <li class="breadcrumb-item active">{% trans "Overview" %}</li>
+    {% endif %}
+{% endblock %}
+
+{% block helpdesk_body %}
+    <div class="card">
+        {% if helpdesk_settings.HELPDESK_TICKETS_TIMELINE_ENABLED %}
+        <div class="card-header">
+            <ul class="nav nav-tabs">
+                <li class="nav-item" style="width: 200px;">
+                    {% trans "Query Results" %}:
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#datatabletabcontents" id="datatabletabcontents-tab"
+                       data-toggle="tab" role="tab" aria-controls="datatabletabcontents" aria-selected=true>
+                        <i class="fas fa-th-list"></i>
+                        {% trans "Table" %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#timelinetabcontents" id="timelinetabcontents-tab" data-toggle="tab"
+                       role="tab" aria-controls="timelinetabcontents" aria-selected=false>
+                        <i class="fas fa-history"></i>
+                        {% trans "Timeline" %}
+                    </a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+        <div class="card-body">
+            {{ search_message|safe }}
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="datatabletabcontents" role="tabpanel"
+                     aria-labelledby="datatabletabcontents-tab">
+                    <!-- View Toggle Button -->
+                    <div class="mb-3">
+                        <button id="toggle-view-btn" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-th-large"></i> {% trans "Switch to Card View" %}
+                        </button>
+                    </div>
+
+                    <!-- Card View (Default) -->
+                    <div id="card-view" class="ticket-view">
+                        <form method='post' action='{% url 'helpdesk:mass_update' %}' id="ticket_mass_update_card">
+                            {% csrf_token %}
+                            <div class="row" id="ticketCards">
+                                <!-- Tickets will be populated here -->
+                            </div>
+                            <div id="no-tickets-message" class="alert alert-info" style="display: none;">
+                                {% trans "No Tickets Match Your Selection" %}
+                            </div>
+
+                            <p class="mt-3">
+                                <label>{% trans "Select:" %}</label>
+                                <button id="select_all_btn_card" type="button" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-check-circle"></i> {% trans "All" %}
+                                </button>
+                                <button id='select_none_btn_card' type="button" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-times-circle"></i> {% trans "None" %}
+                                </button>
+                                <button id='select_inverse_btn_card' type="button" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-expand-arrows-alt"></i> {% trans "Invert" %}
+                                </button>
+                            </p>
+
+                            <div class="mass-action-container mt-3">
+                                <label for='id_mass_action_card'>{% trans "With Selected Tickets:" %}</label>
+                                <select name='action' id='id_mass_action_card' class="form-control select2-mass-action">
+                                    <option value='take'>{% trans "Take (Assign to me)" %}</option>
+                                    <option value='delete'>{% trans "Delete" %}</option>
+                                    <option value='merge'>{% trans "Merge" %}</option>
+                                    <optgroup label='{% trans "Close" %}'>
+                                        <option value='close'>{% trans "Close (Don't Send E-Mail)" %}</option>
+                                        <option value='close_public'>{% trans "Close (Send E-Mail)" %}</option>
+                                    </optgroup>
+                                    <optgroup label='{% trans "Assign To" %}'>
+                                        <option value='unassign'>{% trans "Nobody (Unassign)" %}</option>
+                                        <option value='assign_select2' data-select2-id='user_select_card'>{% trans "Select User" %}</option>
+                                    </optgroup>
+                                    <optgroup label='{% trans "Set KB Item" %}'>
+                                        <option value='kbitem_none'>{% trans "No KB Item" %}</option>
+                                        {% for kbi in kb_items %}
+                                            <option value='kbitem_{{ kbi.id }}'>{{ kbi.category.title }}: {{ kbi.title }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                </select>
+                                <div class="select2-user-container">
+                                    <select name='selected_user' id='user_select_card' class='form-control select2-user'></select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-arrow-circle-right"></i> {% trans "Go" %}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Table View (Hidden by Default) -->
+                    <div id="table-view" class="ticket-view" style="display: none;">
+                        <form method='post' action='{% url 'helpdesk:mass_update' %}' id="ticket_mass_update_table">
+                            {% csrf_token %}
+                            <table class="table table-sm table-striped table-bordered table-hover"
+                                   id="ticketTable" data-page-length='{{ default_tickets_per_page }}'>
+                                <thead class="thead-light">
+                                <tr>
+                                    <th></th>
+                                    <th>{% trans "Ticket" %}</th>
+                                    <th>{% trans "Priority" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                    <th>{% trans "Assigned To" %}</th>
+                                    <th>{% trans "Created" %}</th>
+                                    <th>{% trans "Submitted From" %}</th>
+                                    <th>{% trans "Ticket Type" %}</th>
+                                </tr>
+                                </thead>
+                            </table>
+
+                            <p>
+                                <label>{% trans "Select:" %}</label>
+                                <button id="select_all_btn_table" type="button" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-check-circle"></i> {% trans "All" %}
+                                </button>
+                                <button id='select_none_btn_table' type="button" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-times-circle"></i> {% trans "None" %}
+                                </button>
+                                <button id='select_inverse_btn_table' type="button" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-expand-arrows-alt"></i> {% trans "Invert" %}
+                                </button>
+                            </p>
+
+                            <div class="mass-action-container mt-3">
+                                <label for='id_mass_action_table'>{% trans "With Selected Tickets:" %}</label>
+                                <select name='action' id='id_mass_action_table' class="form-control select2-mass-action">
+                                    <option value='take'>{% trans "Take (Assign to me)" %}</option>
+                                    <option value='delete'>{% trans "Delete" %}</option>
+                                    <option value='merge'>{% trans "Merge" %}</option>
+                                    <optgroup label='{% trans "Close" %}'>
+                                        <option value='close'>{% trans "Close (Don't Send E-Mail)" %}</option>
+                                        <option value='close_public'>{% trans "Close (Send E-Mail)" %}</option>
+                                    </optgroup>
+                                    <optgroup label='{% trans "Assign To" %}'>
+                                        <option value='unassign'>{% trans "Nobody (Unassign)" %}</option>
+                                        <option value='assign_select2' data-select2-id='user_select_table'>{% trans "Select User" %}</option>
+                                    </optgroup>
+                                    <optgroup label='{% trans "Set KB Item" %}'>
+                                        <option value='kbitem_none'>{% trans "No KB Item" %}</option>
+                                        {% for kbi in kb_items %}
+                                            <option value='kbitem_{{ kbi.id }}'>{{ kbi.category.title }}: {{ kbi.title }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                </select>
+                                <div class="select2-user-container">
+                                    <select name='selected_user' id='user_select_table' class='form-control select2-user'></select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-arrow-circle-right"></i> {% trans "Go" %}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Modal for Ticket Details -->
+                    <div class="modal fade" id="ticketDetailModal" tabindex="-1" role="dialog" aria-labelledby="ticketDetailModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="ticketDetailModalLabel">{% trans "Ticket Details" %}</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">×</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p><strong>{% trans "Ticket" %}:</strong> <span id="modal-ticket-id"></span>. <span id="modal-ticket-title"></span></p>
+                                    <p><strong>{% trans "Status" %}:</strong> <span id="modal-ticket-status"></span></p>
+                                    <p><strong>{% trans "Priority" %}:</strong> <span id="modal-ticket-priority"></span></p>
+                                    <p><strong>{% trans "Assigned To" %}:</strong> <span id="modal-ticket-assigned-to"></span></p>
+                                    <p><strong>{% trans "Created" %}:</strong> <span id="modal-ticket-created"></span></p>
+                                    <p><strong>{% trans "Due Date" %}:</strong> <span id="modal-ticket-due-date"></span></p>
+                                    <p><strong>{% trans "Submitter Email" %}:</strong> <span id="modal-ticket-submitter"></span></p>
+                                    <p><strong>{% trans "Submitter Username" %}:</strong> <span id="modal-ticket-submitter-username"></span></p>
+                                    <p><strong>{% trans "Submitter Phone" %}:</strong> <span id="modal-ticket-submitter-phone"></span></p>
+                                    <p><strong>{% trans "Submitted From" %}:</strong> <a id="modal-ticket-submitted-from" href="" target="_blank"></a></p>
+                                    <p><strong>{% trans "Queue" %}:</strong> <span id="modal-ticket-queue"></span></p>
+                                    <p><strong>{% trans "Ticket Type" %}:</strong> <span id="modal-ticket-type"></span></p>
+                                </div>
+                                <div class="modal-footer">
+                                    <a id="modal-ticket-view-link" href="" class="btn btn-primary">{% trans "View Ticket" %}</a>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "Close" %}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if helpdesk_settings.HELPDESK_TICKETS_TIMELINE_ENABLED %}
+                <div class="tab-pane fade" id="timelinetabcontents" role="tabpanel" aria-labelledby="timelinetabcontents-tab">
+                    <div id='timeline-embed' style="width: 100%; height: 80vh"></div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-hand-pointer"></i>
+            {% trans "Query Selection" %}
+        </div>
+        <div class="card-body">
+            <!-- start accordion -->
+            <div class="accordion" id="queryAccordion">
+                <div class="card">
+                    <div class="card-header" id="headingOne">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link btn-sm" type="button" data-toggle="collapse"
+                                    data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                <i class="fas fa-filter"></i>
+                                {% trans "Filters" %}
+                            </button>
+                        </h5>
+                    </div>
+
+                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
+                         data-parent="#queryAccordion">
+                        <div class="card-body">
+                            <form method="get">
+                                <div class="form-group float-right">
+                                    <label for="filterBuilderSelect">{% trans "Add filter" %}:</label>
+                                    <select class="custom-select custom-select-sm mb-0"
+                                            aria-describedby="select-description" name="select" id="filterBuilderSelect"
+                                            onChange="onFilterChange(this.value)">
+                                        <option value="">--</option>
+                                        <option id="filterBuilderSelect-Sort" value="Sort"{% if query_params.sorting %} disabled{% endif %}>
+                                            {% trans "Sorting" %}
+                                        </option>
+                                        <option id="filterBuilderSelect-Owner" value="Owner"{% if query_params.filtering.assigned_to__id__in or query_params.filtering_null.assigned_to__id__isnull %} disabled{% endif %}>
+                                            {% trans "Owner" %}
+                                        </option>
+                                        <option id="filterBuilderSelect-Queue" value="Queue"{% if query_params.filtering.queue__id__in or query_params.filtering_null.queue__id__isnull %} disabled{% endif %}>
+                                            {% trans "Queue" %}
+                                        </option>
+                                        <option id="filterBuilderSelect-Status" value="Status"{% if query_params.filtering.status__in %} disabled{% endif %}>
+                                            {% trans "Status" %}
+                                        </option>
+                                        <option id="filterBuilderSelect-Keywords" value="Keywords"{% if query_params.search_string %} disabled{% endif %}>
+                                            {% trans "Keywords" %}
+                                        </option>
+                                        <option id="filterBuilderSelect-Dates" value="Dates"{% if query_params.filtering.created__gte or query_params.filtering.created__lte %} disabled{% endif %}>
+                                            {% trans "Date Range" %}
+                                        </option>
+                                        <option id="filterBuilderSelect-KBItems" value="KBItems"{% if query_params.filtering.kbitem__in or query_params.filtering_null.kbitem__isnull %} disabled{% endif %}>
+                                            {% trans "Knowledge base items" %}
+                                        </option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+
+                        <form method="get">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item filterBox{% if query_params.filtering.company__id__in %} filterBoxShow{% endif %}" id="filterBoxCompany">
+                                    {% include 'helpdesk/filters/company.html' %}
+                                </li>
+                                <li id="filterBoxSort"
+                                    class="filterBox{% if query_params.sorting %} filterBoxShow{% endif %} list-group-item"
+                                    id="filterBoxSort">
+                                    {% include 'helpdesk/filters/sorting.html' %}
+                                </li>
+                                <li class="filterBox{% if query_params.filtering.assigned_to__id__in or query_params.filtering_null.assigned_to__id__isnull %} filterBoxShow{% endif %} list-group-item"
+                                    id=filterBoxOwner>
+                                    {% include 'helpdesk/filters/owner.html' %}
+                                </li>
+                                <li class="list-group-item filterBox{% if query_params.filtering.queue__id__in or query_params.filtering_null.queue__id__isnull %} filterBoxShow{% endif %}"
+                                    id="filterBoxQueue">
+                                    {% include 'helpdesk/filters/queue.html' %}
+                                </li>
+                                <li class="list-group-item filterBox{% if query_params.filtering.status__in %} filterBoxShow{% endif %}"
+                                    id="filterBoxStatus">
+                                    {% include 'helpdesk/filters/status.html' %}
+                                </li>
+                                <li class="list-group-item filterBox{% if query_params.filtering.created__gte or query_params.filtering.created__lte %} filterBoxShow{% endif %}"
+                                    id='filterBoxDates'>
+                                    {% include 'helpdesk/filters/date.html' %}
+                                </li>
+                                <li class="list-group-item filterBox{% if query_params.search_string %} filterBoxShow{% endif %}"
+                                    id="filterBoxKeywords">
+                                    {% include 'helpdesk/filters/keywords.html' %}
+                                </li>
+                                <li class="list-group-item filterBox{% if query_params.filtering.kbitem__in or query_params.filtering_null.kbitem__isnull %} filterBoxShow{% endif %}"
+                                    id="filterBoxKBItems">
+                                    {% include 'helpdesk/filters/kbitems.html' %}
+                                </li>
+                                <li class="list-group-item">
+                                    <input class="btn btn-primary btn-sm" type='submit' value='{% trans "Apply Filters" %}'/>
+                                </li>
+                                {% if from_saved_query and saved_query.user == user %}
+                                    <li class="list-group-item">
+                                        {% blocktrans with saved_query.title as query_name %}You are currently viewing saved query <strong>"{{ query_name }}"</strong>.{% endblocktrans %}
+                                        <a href='{% url 'helpdesk:delete_query' saved_query.id %}'>
+                                            {% trans "Delete Saved Query" %}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if from_saved_query %}
+                                    <li class="list-group-item">
+                                        {% blocktrans with saved_query.id as query_id %}<a href='../reports/?saved_query={{ query_id }}'>Run a report</a> on this query to see stats and charts for the data listed below.{% endblocktrans %}
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </form>
+                    </div>
+                </div> <!-- end card -->
+
+                <div class="card">
+                    <div class="card-header" id="headingTwo">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link collapsed btn-sm" type="button" data-toggle="collapse"
+                                    data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                <i class="fas fa-save"></i>
+                                {% trans "Save Query" %}
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#queryAccordion">
+                        <div class="card-body">
+                            <form method='post' action='{% url 'helpdesk:savequery' %}'>
+                                {% csrf_token %}
+                                <input type='hidden' name='query_encoded' value='{{ urlsafe_query }}'/>
+                                <dl>
+                                    <dt><label for='id_title'>{% trans "Query Name" %}</label></dt>
+                                    <dd><input type='text' name='title' id='id_title'/></dd>
+                                    <dd class='form_help_text'>{% trans "This name appears in the drop-down list of saved queries. If you share your query, other users will see this name, so choose something clear and descriptive!" %}</dd>
+
+                                    <dt><label for='id_shared'>{% trans "Shared?" %}</label></dt>
+                                    <dd><input type='checkbox' name='shared'
+                                               id='id_shared'/> {% trans "Yes, share this query with other users." %}
+                                    </dd>
+                                    <dd class='form_help_text'>{% trans "If you share this query, it will be visible by <em>all</em> other logged-in users." %}</dd>
+                                </dl>
+                                <div class='buttons'>
+                                    <input class="btn btn-primary" type='submit' value='{% trans "Save Query" %}'>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div> <!-- end card -->
+
+                {% if user_saved_queries %}
+                    <div class="card">
+                        <div class="card-header" id="headingThree">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link collapsed btn-sm" type="button" data-toggle="collapse"
+                                        data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    {% trans "Use Saved Query" %}
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseThree" class="collapse" aria-labelledby="headingThree"
+                             data-parent="#queryAccordion">
+                            <div class="card-body">
+                                <form action='{% url 'helpdesk:list' %}'>
+                                    <p>
+                                        <label for='id_query_selector'>{% trans "Query" %}</label>
+                                        <select name='saved_query' id='id_query_selector'>
+                                        {% for q in user_saved_queries %}
+                                            <option value='{{ q.id }}'>
+                                                {{ q.title }}{% if q.shared %}
+                                                    (Shared{% if user != q.user %} by {{ q.user.get_username }}{% endif %})
+                                                {% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select></p>
+                                    <input class="btn btn-primary" type='submit' value='{% trans "Run Query" %}'>
+                                </form>
+                            </div>
+                        </div>
+                    </div> <!-- end card -->
+                {% endif %}
+            </div>
+            <!-- end accordion -->
+        </div>
+        <!-- end card-body -->
+    </div>
+    <!-- end top card -->
+{% endblock %}
+
+{% block helpdesk_js %}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src='{% static "helpdesk/filter.js" %}'></script>
+    <!-- Timeline 3 JavaScript -->
+    {% if helpdesk_settings.HELPDESK_USE_CDN %}
+    <script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"></script>
+    {% else %}
+    <script src="{% static 'helpdesk/vendor/timeline3/js/timeline.js' %}"></script>
+    {% endif %}
+    <script>
+        function get_url(row) {
+            return "{% url 'helpdesk:view' 1234 %}".replace(/1234/, row.id.toString());
+        }
+
+        function htmlEntities(str) {
+            return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+        }
+
+        // Get CSRF token from the form
+        function getCsrfToken() {
+            return $('input[name="csrfmiddlewaretoken"]').val();
+        }
+
+        $(document).on('click', '.ticket_multi_select_card', function (event) {
+            event.stopPropagation(); // Stop the click event from bubbling up to the ticket-card
+        });
+
+        $(document).ready(function () {
+            // Function to toggle user select visibility
+            function toggleUserSelect($massActionSelect) {
+                var $userSelectContainer = $massActionSelect.closest('.mass-action-container').find('.select2-user-container');
+                var $userSelect = $userSelectContainer.find('.select2-user');
+                if ($massActionSelect.val() === 'assign_select2') {
+                    $userSelectContainer.show();
+                } else {
+                    $userSelectContainer.hide();
+                    $userSelect.val(null).trigger('change'); // Clear selection
+                }
+            }
+
+            // Initialize Select2 for mass action dropdowns
+            $('.select2-mass-action').select2({
+                minimumResultsForSearch: Infinity,
+                width: 'auto'
+            });
+
+            // Initialize Select2 for user selection
+            $('.select2-user').select2({
+                placeholder: "{% trans 'Search for a user' %}",
+                allowClear: true,
+                ajax: {
+                    url: "{% url 'helpdesk:user_autocomplete' %}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term || '',
+                            page: params.page || 1
+                        };
+                    },
+                    processResults: function (data, params) {
+                        params.page = params.page || 1;
+                        return {
+                            results: data.items.map(function (item) {
+                                return {
+                                    id: item.id,
+                                    text: item.text
+                                };
+                            }),
+                            pagination: {
+                                more: (params.page * 10) < data.total_count
+                            }
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 1,
+                width: '100%'
+            });
+
+            // Toggle user select visibility on mass action change
+            $('.select2-mass-action').each(function () {
+                toggleUserSelect($(this)); // Initial toggle on page load
+            }).on('change', function () {
+                toggleUserSelect($(this));
+            });
+
+            // Shared DataTable settings
+            const dataTableSettings = {
+                language: {
+                    "emptyTable": "{% trans 'No Tickets Match Your Selection' %}"
+                },
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    "url": "{% url 'helpdesk:datatables_ticket_list' urlsafe_query %}",
+                    "type": "GET",
+                },
+                createdRow: function (row, data, dataIndex) {
+                    $(row).addClass(data.row_class);
+                }
+            };
+
+            // Table View DataTable Initialization
+            const tableView = $('#ticketTable').DataTable({
+                ...dataTableSettings,
+                dom: 'ltBp',
+                buttons: ["colvis"],
+                columns: [
+                    {
+                        data: "id",
+                        orderable: false,
+                        render: function (data, type, row, meta) {
+                            if (type === 'display') {
+                                return "<input type='checkbox' name='ticket_id' value='" + data + "' class='ticket_multi_select_table' />";
+                            }
+                            return data;
+                        }
+                    },
+                    {
+                        data: "ticket",
+                        render: function (data, type, row, meta) {
+                            if (type === 'display') {
+                                return '<div class="tickettitle"><a href="' + get_url(row) + '" >' +
+                                    row.id + '. ' +
+                                    htmlEntities(row.title) + '</a></div>';
+                            }
+                            return data;
+                        }
+                    },
+                    {
+                        data: "priority",
+                        render: function (data, type, row, meta) {
+                            let priorityClass = "text-success";
+                            if (data === 1) priorityClass = "text-success";
+                            else if (data === 2) priorityClass = "text-info";
+                            else if (data === 3) priorityClass = "text-primary";
+                            else if (data === 4) priorityClass = "text-warning";
+                            else if (data === 5) priorityClass = "text-danger";
+                            return '<span class="' + priorityClass + '">' + data + '</span>';
+                        }
+                    },
+                    {
+                        data: "status",
+                        render: function (data, type, row, meta) {
+                            return '<span class="font-weight-bold">' + data + '</span>';
+                        }
+                    },
+                    {
+                        data: "assigned_to",
+                        render: function (data, type, row, meta) {
+                            return data !== "None" ? data : "لاأحد";
+                        }
+                    },
+                    { data: "created" },
+                    {
+                        data: "submitted_from_url",
+                        render: function (data, type, row, meta) {
+                            if (type === 'display') {
+                                return '<a href="' + data + '" target="_blank">' + data + '</a>';
+                            }
+                            return data;
+                        }
+                    },
+                    { data: "ticket_type" }
+                ]
+            });
+
+            // Card View Data Fetching and Rendering
+            $.ajax({
+                url: "{% url 'helpdesk:datatables_ticket_list' urlsafe_query %}",
+                type: "GET",
+                data: {
+                    draw: 1, // Required by DataTables
+                    start: 0, // Start at the first record
+                    length: 10 // Fetch 10 records (adjust as needed for pagination)
+                },
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                },
+                success: function (data) {
+                    const tickets = data.data;
+                    const ticketCards = $('#ticketCards');
+                    ticketCards.empty(); // Clear any existing cards
+                    if (tickets && tickets.length > 0) {
+                        tickets.forEach(row => {
+                            let priorityClass = "عادي";
+                            if (row.priority === 0) priorityClass = "عالي";
+                            else if (row.priority === 1) priorityClass = "عاجل";                            
+                            else if (row.priority === 2) priorityClass = "مهم";
+                            else if (row.priority === 3) priorityClass = "عادي";
+                            else if (row.priority === 4) priorityClass = "منخفض";
+
+                            let statusClass = "secondary";
+                            if (row.status === "Open") statusClass = "primary";
+                            else if (row.status === "Resolved") statusClass = "success";
+                            else if (row.status === "Closed") statusClass = "secondary";
+
+                            const cardHtml = `
+                                <div class="col-md-4 mb-3">
+                                    <div class="card ticket-card" data-toggle="modal" data-target="#ticketDetailModal"
+                                         data-id="${row.id}"
+                                         data-title="${htmlEntities(row.title)}"
+                                         data-status="${row.status}"
+                                         data-priority="${priorityClass}"
+                                         data-assigned-to="${row.assigned_to !== 'None' ? row.assigned_to : 'لا أحد'}"
+                                         data-created="${row.created}"
+                                         data-due-date="${row.due_date || ''}"
+                                         data-submitter="${row.submitter || ''}"
+                                         data-submitter-username="${row.submitter_username || ''}"
+                                         data-submitter-phone="${row.submitter_phone || ''}"
+                                         data-submitted-from="${row.submitted_from_url || ''}"
+                                         data-queue="${row.queue.title}"
+                                         data-ticket-type="${row.ticket_type || ''}">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div>
+                                                    <input type="checkbox" name="ticket_id" value="${row.id}" class="ticket_multi_select_card mr-2" />
+                                                    <span class="ticket-id">#${row.id}</span>
+                                                </div>
+                                                <span class="font-weight-bold">${row.status}</span>
+                                            </div>
+                                            <h5 class="card-title ticket-title">${htmlEntities(row.title)}</h5>
+                                            <p class="card-text">
+                                                <strong>{% trans "Priority" %}:</strong> <span class="font-weight-bold">${row.priority}</span><br>
+                                                <strong>{% trans "Assigned To" %}:</strong> ${row.assigned_to !== 'None' ? row.assigned_to : 'لا أحد'}<br>
+                                                <strong>{% trans "Created" %}:</strong> ${row.created}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            ticketCards.append(cardHtml);
+                        });
+                        $('#no-tickets-message').hide();
+                    } else {
+                        $('#no-tickets-message').show();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching tickets:', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText
+                    });
+                    alert("{% trans 'Error fetching tickets occurred, please contact the system administrators of this server.' %}\nDetails: " + status + " - " + error);
+                    $('#no-tickets-message').show();
+                }
+            });
+
+            // Toggle between Card and Table View
+            $('#toggle-view-btn').click(function () {
+                const isCardView = $('#card-view').is(':visible');
+                $('#card-view').toggle(!isCardView);
+                $('#table-view').toggle(isCardView);
+                $(this).html(isCardView ?
+                    '<i class="fas fa-th-large"></i> {% trans "Switch to Card View" %}' :
+                    '<i class="fas fa-th-list"></i> {% trans "Switch to Table View" %}');
+            });
+
+            // Populate Modal with Ticket Details
+            $(document).on('click', '.ticket-card', function () {
+                const card = $(this);
+                $('#modal-ticket-id').text(card.data('id'));
+                $('#modal-ticket-title').text(card.data('title'));
+                $('#modal-ticket-status').text(card.data('status'));
+                $('#modal-ticket-priority').text(card.data('priority'));
+                $('#modal-ticket-assigned-to').text(card.data('assigned-to'));
+                $('#modal-ticket-created').text(card.data('created'));
+                $('#modal-ticket-due-date').text(card.data('due-date'));
+                $('#modal-ticket-submitter').text(card.data('submitter'));
+                $('#modal-ticket-submitter-username').text(card.data('submitter-username'));
+                $('#modal-ticket-submitter-phone').text(card.data('submitter-phone'));
+                const submittedFrom = card.data('submitted-from');
+                if (submittedFrom) {
+                    $('#modal-ticket-submitted-from').attr('href', submittedFrom).text(submittedFrom);
+                } else {
+                    $('#modal-ticket-submitted-from').text('N/A').removeAttr('href');
+                }
+                $('#modal-ticket-queue').text(card.data('queue'));
+                $('#modal-ticket-type').text(card.data('ticket-type'));
+                $('#modal-ticket-view-link').attr('href', get_url({ id: card.data('id') }));
+            });
+
+            // Shortcuts to select/unselect multiple tickets (Card View)
+            $("#select_all_btn_card").click(function () {
+                $(".ticket_multi_select_card").prop('checked', true);
+            });
+            $("#select_none_btn_card").click(function () {
+                $(".ticket_multi_select_card").prop('checked', false);
+            });
+            $("#select_inverse_btn_card").click(function () {
+                $(".ticket_multi_select_card").each(function () {
+                    $(this).prop('checked', !$(this).prop('checked'));
+                });
+            });
+
+            // Shortcuts to select/unselect multiple tickets (Table View)
+            $("#select_all_btn_table").click(function () {
+                $(".ticket_multi_select_table").prop('checked', true);
+            });
+            $("#select_none_btn_table").click(function () {
+                $(".ticket_multi_select_table").prop('checked', false);
+            });
+            $("#select_inverse_btn_table").click(function () {
+                $(".ticket_multi_select_table").each(function () {
+                    $(this).prop('checked', !$(this).prop('checked'));
+                });
+            });
+
+            // Timeline initialization when tab is displayed
+            let timeline_loaded = false;
+            $('#timelinetabcontents-tab').on('shown.bs.tab', function (e) {
+                if (!timeline_loaded) {
+                    new TL.Timeline(
+                        'timeline-embed',
+                        '{% url 'helpdesk:timeline_ticket_list' urlsafe_query %}'
+                    );
+                    timeline_loaded = true;
+                }
+            });
+        });
+    </script>
+{% endblock %}

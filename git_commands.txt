@@ -1,0 +1,22 @@
+Remove the .git directory (this deletes all Git history and configuration): rm -rf .git
+
+Remove any Git-related files (e.g., .gitignore if you want a fresh start): rm .gitignore
+
+Verify Git is removed: Run the following to confirm there’s no Git repository: git status
+
+Initialize a New Git Repository : git init
+
+Create or add a .gitignore file (recommended for Django projects): touch .gitignore
+
+Add all files to the new repository: git add .
+
+Commit the files: git commit -m "Initial commit for new repository"
+
+Connect to a new remote repository: git remote add origin <new-repo-url>
+
+Verify the remote connection: git remote -v # This should display the new repository’s fetch and push URLs.
+
+Push to the new repository: git push -u origin main
+
+
+

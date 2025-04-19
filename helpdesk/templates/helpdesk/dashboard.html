@@ -1,0 +1,207 @@
+{% extends "helpdesk/base.html" %}{% load i18n %}
+
+{% block helpdesk_title %}{% trans "Helpdesk Dashboard" %}{% endblock %}
+
+{% block helpdesk_breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="#">Dashboard</a>
+</li>
+<li class="breadcrumb-item active">{% trans "Overview" %}</li>
+{% endblock %}
+
+{% block helpdesk_body %}
+<div class="container-fluid">
+    <!-- Welcome Message -->
+    <div class="alert alert-info">
+        <p>{% trans "Welcome to your Helpdesk Dashboard! From here you can quickly see tickets submitted by you, tickets you are working on, and those tickets that have no owner." %}</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-sm-6 mb-3">
+            <div class="card text-white bg-primary o-hidden h-100">
+                <div class="card-body">
+                    <div class="card-body-icon">
+                        <i class="fas fa-fw fa-comments"></i>
+                    </div>
+                    <div class="mr-5">{{ open_tickets_count }} {% trans "Open Tickets" %}</div>
+                </div>
+                <a class="card-footer text-white clearfix small z-1" href="{% url 'helpdesk:list' %}?status=1">
+                    <span class="float-left">{% trans "View Details" %}</span>
+                    <span class="float-right">
+                        <i class="fas fa-angle-right"></i>
+                    </span>
+                </a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-3">
+            <div class="card text-white bg-success o-hidden h-100">
+                <div class="card-body">
+                    <div class="card-body-icon">
+                        <i class="fas fa-fw fa-check"></i>
+                    </div>
+                    <div class="mr-5">{{ resolved_tickets_count }} {% trans "Resolved Tickets" %}</div>
+                </div>
+                <a class="card-footer text-white clearfix small z-1" href="{% url 'helpdesk:list' %}?status=2">
+                    <span class="float-left">{% trans "View Details" %}</span>
+                    <span class="float-right">
+                        <i class="fas fa-angle-right"></i>
+                    </span>
+                </a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-3">
+            <div class="card text-white bg-warning o-hidden h-100">
+                <div class="card-body">
+                    <div class="card-body-icon">
+                        <i class="fas fa-fw fa-user-slash"></i>
+                    </div>
+                    <div class="mr-5">{{ unassigned_tickets_count }} {% trans "Unassigned Tickets" %}</div>
+                </div>
+                <a class="card-footer text-white clearfix small z-1" href="{% url 'helpdesk:list' %}?assigned_to__isnull=true">
+                    <span class="float-left">{% trans "View Details" %}</span>
+                    <span class="float-right">
+                        <i class="fas fa-angle-right"></i>
+                    </span>
+                </a>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-3">
+            <div class="card text-white bg-info o-hidden h-100">
+                <div class="card-body">
+                    <div class="card-body-icon">
+                        <i class="fas fa-fw fa-tasks"></i>
+                    </div>
+                    <div class="mr-5">{{ my_tickets_count }} {% trans "My Tickets" %}</div>
+                </div>
+                <a class="card-footer text-white clearfix small z-1" href="{% url 'helpdesk:my-tickets' %}">
+                    <span class="float-left">{% trans "View Details" %}</span>
+                    <span class="float-right">
+                        <i class="fas fa-angle-right"></i>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Tickets -->
+    <div class="row">
+        <div class="col-12">
+            <h3>{% trans "My Tickets" %}</h3>
+        </div>
+    </div>
+    <div class="row mb-4">
+        {% for ticket in user_tickets %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <a href="{% url 'helpdesk:view' ticket.id %}">{{ ticket.title|truncatechars:50 }}</a>
+                    <span class="badge badge-{{ ticket.get_status_class }}">{{ ticket.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <p>{{ ticket.description|truncatewords:20 }}</p>
+                    <p>{% trans "Priority:" %} {{ ticket.get_priority_class }}>{{ ticket.get_priority_display }}</span></p>
+                    <p>{% trans "Assigned to:" %} {{ ticket.assigned_to|default:"لا أحد" }}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'helpdesk:view' ticket.id %}" class="btn btn-primary btn-sm">{% trans "View Ticket" %}</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p>{% trans "You have no tickets assigned to you." %}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Unassigned Tickets -->
+    <div class="row">
+        <div class="col-12">
+            <h3>{% trans "Unassigned Tickets" %}</h3>
+        </div>
+    </div>
+    <div class="row mb-4">
+        {% for ticket in unassigned_tickets %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <a href="{% url 'helpdesk:view' ticket.id %}">{{ ticket.title|truncatechars:50 }}</a>
+                    <span class="badge badge-{{ ticket.get_status_class }}">{{ ticket.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <p>{{ ticket.description|truncatewords:20 }}</p>
+                    <p>{% trans "Priority:" %} {{ ticket.get_priority_class }}>{{ ticket.get_priority_display }}</span></p>
+                    <p>{% trans "Assigned to:" %} لا أحد</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'helpdesk:view' ticket.id %}" class="btn btn-primary btn-sm">{% trans "View Ticket" %}</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p>{% trans "There are no unassigned tickets." %}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Submitted by Current User -->
+    {% if all_tickets_reported_by_current_user %}
+    <div class="row">
+        <div class="col-12">
+            <h3>{% trans "All Tickets Submitted by You" %}</h3>
+        </div>
+    </div>
+    <div class="row mb-4">
+        {% for ticket in all_tickets_reported_by_current_user %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <a href="{% url 'helpdesk:view' ticket.id %}">{{ ticket.title|truncatechars:50 }}</a>
+                    <span class="badge badge-{{ ticket.get_status_class }}">{{ ticket.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <p>{{ ticket.description|truncatewords:20 }}</p>
+                    <p>{% trans "Priority:" %} {{ ticket.get_priority_class }}>{{ ticket.get_priority_display }}</span></p>
+                    <p>{% trans "Assigned to:" %} {{ ticket.assigned_to|default:"لا أحد" }}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'helpdesk:view' ticket.id %}" class="btn btn-primary btn-sm">{% trans "View Ticket"%}</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Closed/Resolved Tickets -->
+    {% if user_tickets_closed_resolved %}
+    <div class="row">
+        <div class="col-12">
+            <h3>{% trans "Closed & Resolved Tickets You Used to Work On" %}</h3>
+        </div>
+    </div>
+    <div class="row mb-4">
+        {% for ticket in user_tickets_closed_resolved %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <a href="{% url 'helpdesk:view' ticket.id %}">{{ ticket.title|truncatechars:50 }}</a>
+                    <span class="badge badge-{{ ticket.get_status_class }}">{{ ticket.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <p>{{ ticket.description|truncatewords:20 }}</p>
+                    <p>{% trans "Priority:" %} {{ ticket.get_priority_class }}>{{ ticket.get_priority_display }}</span></p>
+                    <p>{% trans "Assigned to:" %} {{ ticket.assigned_to|default:"لا أحد" }}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'helpdesk:view' ticket.id %}" class="btn btn-primary btn-sm">{% trans "View Ticket"%}</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

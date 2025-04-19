@@ -1,0 +1,140 @@
+{% extends "helpdesk/help_base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "django-helpdesk Context Listing" %}{% endblock %}
+{% block heading %}{% trans "django-helpdesk Context Listing" %}{% endblock %}
+
+{% block content %}
+    <h2>{% trans "Contents" %}</h2>
+
+    <ul>
+        <li><a href='#introduction'>{% trans "Introduction" %}</a></li>
+        <li><a href='#usage'>{% trans "Inserting Fields" %}</a></li>
+        <li><a href='#queue'>{% trans "Queue Fields" %}</a>
+        <ul>
+            <li><a href='#queue_title'>{% trans "queue.title" %}</a></li>
+            <li><a href='#queue_slug'>{% trans "queue.slug" %}</a></li>
+            <li><a href='#queue_email_address'>{% trans "queue.email_address" %}</a></li>
+            <li><a href='#queue_from_address'>{% trans "queue.from_address" %}</a></li>
+        </ul>
+        </li>
+        <li><a href='#ticket'>{% trans "Ticket Fields" %}</a>
+        <ul>
+            <li><a href='#ticket_title'>{% trans "ticket.title" %}</a></li>
+            <li><a href='#ticket_created'>{% trans "ticket.created" %}</a></li>
+            <li><a href='#ticket_modified'>{% trans "ticket.modified" %}</a></li>
+            <li><a href='#ticket_submitter_email'>{% trans "ticket.submitter_email" %}</a></li>
+            <li><a href='#ticket_status'>{% trans "ticket.status" %}</a></li>
+            <li><a href='#ticket_get_status_display'>{% trans "ticket.get_status_display" %}</a></li>
+            <li><a href='#ticket_on_hold'>{% trans "ticket.on_hold" %}</a></li>
+            <li><a href='#ticket_description'>{% trans "ticket.description" %}</a></li>
+            <li><a href='#ticket_resolution'>{% trans "ticket.resolution" %}</a></li>
+            <li><a href='#ticket_priority'>{% trans "ticket.priority" %}</a></li>
+            <li><a href='#ticket_get_priority_display'>{% trans "ticket.get_priority_display" %}</a></li>
+            <li><a href='#ticket_last_escalation'>{% trans "ticket.last_escalation" %}</a></li>
+            <li><a href='#ticket_ticket'>{% trans "ticket.ticket" %}</a></li>
+            <li><a href='#ticket_ticket_for_url'>{% trans "ticket.ticket_for_url" %}</a></li>
+            <li><a href='#ticket_get_status'>{% trans "ticket.get_status" %}</a></li>
+            <li><a href='#ticket_ticket_url'>{% trans "ticket.ticket_url" %}</a></li>
+            <li><a href='#ticket_staff_url'>{% trans "ticket.staff_url" %}</a></li>
+            <li><a href='#ticket_assigned_to'>{% trans "ticket.assigned_to" %}</a></li>
+            <li><a href='#ticket_queue'>{% trans "ticket.queue" %}</a></li>
+        </ul>
+        </li>
+    </ul>
+
+    <h2 id='introduction'>{% trans "Introduction" %}</h2>
+
+    <p>{% trans "django-helpdesk provides a powerful way for you to embed fields from the current ticket into your comments and ticket resolutions using a template language." %}</p>
+
+    <p>{% trans "For example, you may want to place the last escalation date into a ticket comment, or reproduce the original description sent to you by the submitter." %}</p>
+
+    <p><strong>{% trans "Tech Note:" %}</strong> {% trans "This system uses the" %} <a href='http://docs.djangoproject.com/en/dev/topics/templates/#variables'>{% trans "Django templating system" %}</a> {% trans "with a sandboxed template context." %}</p>
+
+    <h2 id='usage'>{% trans "Inserting Fields" %}</h2>
+
+    <p>{% trans "In your comment, enter the field name surrounded by double curly braces. For example, to get the ticket title, use:" %}</p>
+
+    <pre>&#123;&#123; ticket.title &#125;&#125;</pre>
+
+    <h2 id='queue'>{% trans "Queue Fields" %}</h2>
+
+    <p>{% trans "The following fields are available in the template context to display the details of the queue to which this ticket belongs:" %}</p>
+
+    <dl>
+        <dt id='queue_title'>{% trans "queue.title" %}</dt>
+        <dd>{% trans "The display title of the queue" %}</dd>
+        
+        <dt id='queue_slug'>{% trans "queue.slug" %}</dt>
+        <dd>{% trans "The 'slug' of the queue, a single-word lowercase identifier used in URL's and e-mail subjects." %}</dd>
+        
+        <dt id='queue_email_address'>{% trans "queue.email_address" %}</dt>
+        <dd>{% trans "The e-mail address to which users can send an e-mail to open a new ticket automatically." %}</dd>
+        
+        <dt id='queue_from_address'>{% trans "queue.from_address" %}</dt>
+        <dd>{% trans "The e-mail address from which the queue will send e-mails to submitters." %}</dd>
+    </dl>
+
+    <h2 id='ticket'>{% trans "Ticket Fields" %}</h2>
+
+    <dl>
+
+        <dt id='ticket_title'>{% trans "ticket.title" %}</dt>
+        <dd>{% trans "Title of the ticket, as provided by the submitter. A single line of text." %}</dd>
+
+        <dt id='ticket_created'>{% trans "ticket.created" %}</dt>
+        <dd>{% trans "The time/date this ticket was first opened" %}</dd>
+
+        <dt id='ticket_modified'>{% trans "ticket.modified" %}</dt>
+        <dd>{% trans "The time/date this ticket was most recently changed" %}</dd>
+
+        <dt id='ticket_submitter_email'>{% trans "ticket.submitter_email" %}</dt>
+        <dd>{% trans "E-Mail address of the ticket submitter" %}</dd>
+
+        <dt id='ticket_status'>{% trans "ticket.status" %}</dt>
+        <dd>{% trans "Status of this ticket (Integer)" %}</dd>
+
+        <dt id='ticket_get_status_display'>{% trans "ticket.get_status_display" %}</dt>
+        <dd>{% trans "Status of this ticket (Text-based)" %}</dd>
+
+        <dt id='ticket_get_status'>{% trans "ticket.get_status" %}</dt>
+        <dd>{% trans "Status of this ticket (Text-based, includes 'On Hold' if required)" %}</dd>
+
+        <dt id='ticket_on_hold'>{% trans "ticket.on_hold" %}</dt>
+        <dd>{% trans "Indicates whether this ticket is on hold (True/False)" %}</dd>
+
+        <dt id='ticket_description'>{% trans "ticket.description" %}</dt>
+        <dd>{% trans "The description of the ticket, eg the body of the e-mail sent or the problem entered by the submitter" %}</dd>
+
+        <dt id='ticket_resolution'>{% trans "ticket.resolution" %}</dt>
+        <dd>{% trans "The resolution of the ticket provided by staff. This may be blank." %}</dd>
+
+        <dt id='ticket_priority'>{% trans "ticket.priority" %}</dt>
+        <dd>{% trans "The priority of this ticket (1-5, Integer only)" %}</dd>
+
+        <dt id='ticket_get_priority_display'>{% trans "ticket.get_priority_display" %}</dt>
+        <dd>{% trans "The priority of this ticket (Text-based)" %}</dd>
+
+        <dt id='ticket_last_escalation'>{% trans "ticket.last_escalation" %}</dt>
+        <dd>{% trans "The time/date this ticket was last escalated" %}</dd>
+
+        <dt id='ticket_ticket'>{% trans "ticket.ticket" %}</dt>
+        <dd>{% trans "The ticket ID in form '[queue_slug-id]', used in e-mail subjects." %}</dd>
+
+        <dt id='ticket_ticket_for_url'>{% trans "ticket.ticket_for_url" %}</dt>
+        <dd>{% trans "The ticket ID in form 'queue_slug-id', used in URLs" %}</dd>
+
+        <dt id='ticket_ticket_url'>{% trans "ticket.ticket_url" %}</dt>
+        <dd>{% trans "Public URL for this ticket" %}</dd>
+
+        <dt id='ticket_staff_url'>{% trans "ticket.staff_url" %}</dt>
+        <dd>{% trans "Staff-only URL for this ticket" %}</dd>
+
+        <dt id='ticket_assigned_to'>{% trans "ticket.assigned_to" %}</dt>
+        <dd>{% trans "Name of the staff member assigned to this ticket, or 'Unassigned' if it is unassigned." %}</dd>
+
+        <dt id='ticket_queue'>{% trans "ticket.queue" %}</dt>
+        <dd>{% trans "Another dictionary of queue information, identical to" %} <a href='#queue'>{% trans "queue" %}</a> {% trans "above. For example, use ticket.queue.title." %}</dd>
+    </dl>
+
+{% endblock %}

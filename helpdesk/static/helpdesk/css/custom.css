@@ -1,0 +1,121 @@
+/* Ensure the sidebar is positioned correctly */
+.sidebar {
+    position: fixed;
+    top: 56px; /* Matches .fixed-top */
+    bottom: 0;
+  }
+  
+  
+  html[dir="rtl"] .sidebar {
+    right: 0 !important;
+    left: auto !important;
+  }
+  
+  html[dir="ltr"] .sidebar {
+    left: 0 !important;
+    right: auto !important;
+  }
+  
+/* Ensure the wrapper uses flexbox to layout sidebar and content side by side */
+#wrapper {
+  display: flex;
+  flex-wrap: nowrap;
+  min-height: 100vh; /* Ensure the wrapper takes at least the full viewport height */
+}
+
+  /* Adjust content wrapper for RTL */
+  html[dir="rtl"] #wrapper {
+    flex-direction: row-reverse; /* Ensure sidebar and content wrapper are in correct order */
+  }
+  
+  html[dir="rtl"] body.fixed-nav #content-wrapper {
+    padding-left: 0;
+    padding-right: 90px;
+    margin-right: 0; /* Ensure no unwanted margin */
+    width: calc(100% - 90px); /* Constrain width to account for sidebar */
+  }
+  
+  html[dir="rtl"] body.fixed-nav.sidebar-toggled #content-wrapper {
+    padding-right: 0;
+    width: 100%; /* Full width when sidebar is toggled */
+  }
+  
+  @media (min-width: 768px) {
+    html[dir="rtl"] body.fixed-nav #content-wrapper {
+      padding-right: 225px;
+      width: calc(100% - 225px); /* Constrain width to account for sidebar */
+    }
+    html[dir="rtl"] body.fixed-nav.sidebar-toggled #content-wrapper {
+      padding-right: 90px;
+      width: calc(100% - 90px);
+    }
+  }
+  
+  /* Constrain content inside content-wrapper */
+  html[dir="rtl"] #content-wrapper .container-fluid {
+    margin-right: 0; /* Prevent content from shifting too far left */
+    margin-left: auto; /* Align content properly */
+    width: 100%; /* Ensure it fits within the content wrapper */
+  }
+  
+  /* Align sidebar items for RTL */
+  html[dir="rtl"] .sidebar .nav-item .nav-link {
+    text-align: right !important;
+
+  }
+  
+  html[dir="rtl"] .sidebar .nav-item .nav-link i {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  /* Fix dropdown menu alignment */
+  html[dir="rtl"] .sidebar .nav-item .dropdown-menu {
+    right: calc(90px + 0.5rem) !important;
+    left: auto !important;
+  }
+  
+  html[dir="rtl"] .sidebar.toggled .nav-item .dropdown-menu {
+    right: calc(90px + 0.5rem) !important;
+    left: auto !important;
+  }
+  
+  @media (min-width: 768px) {
+    html[dir="rtl"] .sidebar .nav-item .dropdown-menu {
+      right: 1rem !important;
+      left: auto !important;
+    }
+    html[dir="rtl"] .sidebar.toggled .nav-item .dropdown-menu {
+      right: calc(90px + 0.5rem) !important;
+      left: auto !important;
+    }
+  }
+  
+  /* Adjust footer for RTL */
+  html[dir="rtl"] footer.sticky-footer {
+    right: auto;
+    left: 0;
+    width: calc(100% - 90px);
+  }
+  
+  @media (min-width: 768px) {
+    html[dir="rtl"] footer.sticky-footer {
+      width: calc(100% - 225px);
+    }
+  }
+  
+  html[dir="rtl"] body.sidebar-toggled footer.sticky-footer {
+    width: 100%;
+  }
+  
+  @media (min-width: 768px) {
+    html[dir="rtl"] body.sidebar-toggled footer.sticky-footer {
+      width: calc(100% - 90px);
+    }
+  }
+  
+  /* Fix scroll-to-top button for RTL */
+  html[dir="rtl"] .scroll-to-top {
+    right: auto;
+    left: 15px;
+  }

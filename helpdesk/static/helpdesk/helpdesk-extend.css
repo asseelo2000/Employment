@@ -1,0 +1,398 @@
+/*
+Bootstrap overrides
+*/
+@import 'helpdesk-customize.css';
+
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+.thumbnail.filterBox {
+    float: left;
+    border: solid #ccc 1px;
+    padding: 10px;
+    margin: 4px;
+    max-width: 24%;
+    min-height: 200px;
+}
+
+.filterBox {
+    display: none;
+}
+.filterBoxShow {
+    display: block;
+}
+
+.filterBox label {
+    clear: both;
+    display: block;
+}
+
+.filterBox .filterHelp {
+    color: #aaa;
+    font-size: 0.8em;
+    clear: both;
+}
+
+#searchtabs {margin-bottom: 20px;}
+
+.row_tablehead, table.table caption {background-color: #dbd5d9;}
+table.table caption {
+    padding-left: 2em; 
+    line-height: 2em; font-weight: bold;
+}
+table.ticket-stats caption {color: #fbff00; font-style: italic;}
+table.ticket-stats tbody th, table.ticket-stats tbody tr {padding-left: 20px}
+
+.errorlist {
+    list-style: none;
+    padding: 0;
+    color: red;
+}
+
+.has-error .input-group input, .has-error .input-group select, .has-error .input-group textarea {border-color: #b94a48}
+
+#helpdesk-nav-collapse #searchform {
+    padding-top: 0;
+}
+#ticket-description {background-color: #FCF8E3;}
+.followup.well {
+    background-color: #f4f5ff;
+}
+.followup {
+    padding: 20px;
+    margin: 30px;
+}
+/*
+Add your custom styles here
+*/
+#footer {
+    border-top: 2px solid #AAAAAA;
+    margin-top: 20px;
+    padding: 10px 0;
+}
+#helpdesk-body {padding-top: 100px;}
+img.brand {padding-right: 30px;}
+
+div.card-body img {
+    max-width: 900px;
+}
+
+pre {
+    background: #eee;
+    padding: 1em;
+    border: 1pt solid white;
+}
+
+table .tickettitle {
+    max-width: 250px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.handle {
+    cursor: grab;
+}
+
+/* Custom styles for redesign */
+.navbar.navbar-helpdesk {
+    background-color: #007BFF !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-helpdesk .navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    transition: color 0.2s;
+}
+
+.navbar-helpdesk .navbar-brand:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+#searchform .input-group {
+    max-width: 300px;
+}
+
+#searchform .form-control {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    border-radius: 20px 0 0 20px;
+}
+
+#searchform .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#searchform .btn-outline-light {
+    border-radius: 0 20px 20px 0;
+    border-color: rgba(255, 255, 255, 0.3);
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+#searchform .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: white;
+}
+
+.navbar-helpdesk .nav-link {
+    color: white !important;
+    transition: color 0.2s;
+}
+
+.navbar-helpdesk .nav-link:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.navbar-helpdesk .dropdown-menu {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+}
+
+.navbar-helpdesk .dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: background-color 0.2s;
+}
+
+.navbar-helpdesk .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* .card:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s;
+} */
+
+.breadcrumb {
+    background-color: #f8f9fa;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Sidebar styles */
+.sidebar.navbar-nav {
+    background: linear-gradient(180deg, #F8F9FA 0%, #E9ECEF 100%) !important;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar .nav-item.sidebar-item {
+    margin: 0.5rem 0;
+}
+
+.sidebar .nav-item .nav-link {
+    color: #6C757D !important;
+    transition: background-color 0.2s, color 0.2s;
+    border-radius: 0 25px 25px 0;
+    padding: 0.75rem 1rem;
+}
+
+.sidebar .nav-item .nav-link:hover {
+    background-color: #E9ECEF;
+    color: #007BFF !important;
+}
+
+.sidebar .nav-item.active .nav-link {
+    background-color: #007BFF !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+.sidebar .sidebar-icon {
+    background-color: #E9ECEF;
+    border-radius: 50%;
+    padding: 0.5rem;
+    margin-right: 0.75rem;
+    transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+}
+
+.sidebar .nav-item .nav-link:hover .sidebar-icon {
+    animation: bounce 0.5s;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+.sidebar .nav-item.active .sidebar-icon {
+    background-color: #007BFF; /* Blue color for selected icon */
+    color: white; /* Optional: Change icon text color if applicable */
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: scale(1);
+    }
+    40% {
+        transform: scale(1.2);
+    }
+    60% {
+        transform: scale(1.1);
+    }
+}
+
+.sidebar .dropdown-menu {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    margin-left: 1rem;
+}
+
+.sidebar .dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: background-color 0.2s;
+}
+
+.sidebar .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Ticket List Card Styles */
+.ticket-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.ticket-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ticket-id {
+    font-weight: 600;
+    color: #007BFF;
+}
+
+.ticket-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-text {
+    font-size: 0.9rem;
+    color: #6C757D;
+}
+
+.card-text strong {
+    color: #343A40;
+}
+
+/* Modal Styles */
+#ticketDetailModal .modal-content {
+    border-radius: 8px;
+}
+
+#ticketDetailModal .modal-header {
+    background-color: #007BFF;
+    color: white;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#ticketDetailModal .modal-body p {
+    margin-bottom: 0.5rem;
+}
+
+#ticketDetailModal .modal-body strong {
+    color: #343A40;
+}
+
+/* Ensure responsiveness */
+@media (max-width: 767.98px) {
+    .ticket-card {
+        margin: 0 auto;
+        max-width: 100%;
+    }
+}
+
+/* Sidebar toggle styles */
+.sidebar {
+    width: 250px; /* Adjust as needed */
+    transition: transform 0.3s ease-in-out;
+    position: absolute;
+    top: 63px;
+    bottom: 0;
+    z-index: 1000;
+    right: 0; /* Position sidebar on the right */
+}
+
+.sidebar-hidden {
+    transform: translateX(100%); /* Slide sidebar off the right edge */
+}
+
+#content-wrapper {
+    margin-right: 250px; /* Match sidebar width for RTL */
+    transition: margin-right 0.3s ease-in-out;
+}
+
+.content-full {
+    margin-right: 0 !important; /* Full width when sidebar is hidden */
+}
+
+/* Ensure RTL compatibility */
+html[dir="rtl"] .sidebar {
+    right: 0; /* Explicitly set for RTL */
+    left: auto;
+}
+
+html[dir="rtl"] .sidebar-hidden {
+    transform: translateX(100%); /* Slide off right in RTL */
+}
+
+html[dir="rtl"] #content-wrapper {
+    margin-right: 250px; /* Adjust margin for RTL */
+    margin-left: 0;
+}
+
+html[dir="rtl"] .content-full {
+    margin-right: 0 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .sidebar {
+        transform: translateX(100%); /* Hidden by default on mobile */
+    }
+
+    .sidebar-hidden {
+        transform: translateX(100%);
+    }
+
+    .sidebar:not(.sidebar-hidden) {
+        transform: translateX(0); /* Show sidebar when toggled */
+    }
+
+    #content-wrapper {
+        margin-right: 0; /* No margin on mobile */
+    }
+
+    html[dir="rtl"] #content-wrapper {
+        margin-right: 0;
+        margin-left: 0;
+    }
+}

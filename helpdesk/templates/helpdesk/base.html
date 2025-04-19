@@ -1,0 +1,52 @@
+{% load i18n %}
+{% load saved_queries %}
+{% load load_helpdesk_settings %}
+{% load static %}
+{% with request|load_helpdesk_settings as helpdesk_settings %}
+{% with user|saved_queries as user_saved_queries_ %}
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" dir="{{ LANGUAGE_BIDI|yesno:'rtl,ltr,auto' }}">
+
+<head>
+    {% include 'helpdesk/base-head.html' %}
+    {% block helpdesk_head %}{% endblock %}
+    {% include 'helpdesk/base_js.html' %}
+
+</head>
+
+<body id="bg-dark">
+
+    {% include "helpdesk/navigation-header.html" %}
+
+    <div id="wrapper">
+        {% include "helpdesk/navigation-sidebar.html" %}
+
+        <div id="content-wrapper">
+        
+            <div class="container-fluid">
+
+                <!-- Breadcrumbs-->
+                <ol class="breadcrumb">
+                    {% block helpdesk_breadcrumb %}{% endblock %}
+                </ol>
+            
+                {% block helpdesk_body %}{% endblock %}
+            
+            </div>
+            <!-- /.container-fluid -->
+                </div>
+        <!-- /.content-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    {% include "helpdesk/debug.html" %}
+
+    {% block helpdesk_js %}{% endblock %}
+
+</body>
+</html>
+{% endwith %}
+{% endwith %}

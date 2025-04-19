@@ -1,0 +1,8 @@
+{% load i18n humanize %}
+{% load static %}
+{% load in_list %}
+<select name="company" multiple>
+    {% for company in company_choices %}
+        <option value="{{ company.id }}"{% if company.id in query_params.filtering.company__id__in %} selected{% endif %}>{{ company.name }}</option>
+    {% endfor %}
+</select>

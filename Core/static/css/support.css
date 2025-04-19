@@ -1,0 +1,106 @@
+/* Employment/static/css/support.css */
+.support-container {
+    position: relative;
+}
+
+/* Support Icon */
+.support-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: #007bff; /* Blue to match Django admin */
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: transform 0.2s ease;
+}
+
+.support-icon:hover {
+    transform: scale(1.1);
+}
+
+.support-icon img {
+    width: 30px;
+    height: 30px;
+}
+
+/* Support Form */
+.support-form {
+    display: none;
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 300px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    z-index: 1000;
+}
+
+.form-input,
+.form-textarea,
+.form-file {
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.form-textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+.form-file {
+    padding: 5px; /* Less padding for file input */
+}
+
+.form-submit {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745; /* Green for submit */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.form-submit:hover {
+    background-color: #218838;
+}
+
+/* Messages (to match Django admin styling) */
+.messages {
+    margin: 10px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.messages li.success {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.messages li.error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 4px;
+}

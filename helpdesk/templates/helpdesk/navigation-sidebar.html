@@ -1,0 +1,94 @@
+{% load i18n helpdesk_staff %}
+
+<!-- Sidebar -->
+<ul class="sidebar navbar-nav" id="sidebar" style="padding-right: 0px;">
+  {% if helpdesk_settings.HELPDESK_NAVIGATION_ENABLED and user.is_authenticated or user|is_helpdesk_staff %}
+    <li class="nav-item sidebar-item{% if 'dashboard' in request.path %} active{% endif %}">
+      <a class="nav-link" href="{% url 'helpdesk:dashboard' %}" data-toggle="tooltip" data-placement="right" title="{% trans 'Dashboard' %}">
+        <i class="fas fa-fw fa-tachometer-alt sidebar-icon"></i>
+        <span>{% trans "Dashboard" %}</span>
+      </a>
+    </li>
+    <li class="nav-item sidebar-item{% if 'tickets' in request.path and 'submit' not in request.path and 'my-tickets' not in request.path %} active{% endif %}">
+      <a class="nav-link" href="{% url 'helpdesk:list' %}" data-toggle="tooltip" data-placement="right" title="{% trans 'All Tickets' %}">
+        <i class="fas fa-fw fa-tasks sidebar-icon"></i>
+        <span>{% trans "All Tickets" %}</span>
+      </a>
+    </li>
+    <!-- <li class="nav-item dropdown sidebar-item">
+      <a class="nav-link dropdown-toggle" href="#" id="ticketsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-toggle="tooltip" data-placement="right" title="{% trans 'Saved Queries' %}">
+        <i class="fas fa-fw fa-search sidebar-icon"></i>
+        <span>{% trans "Saved Queries" %}</span>
+      </a>
+      <div class="dropdown-menu" aria-labelledby="ticketsDropdown">
+        {% if user_saved_queries_ %}
+        {% for q in user_saved_queries_ %}
+        <a class="dropdown-item small" href="{% url 'helpdesk:list' %}?saved_query={{ q.id }}">{{ q.title }}
+            {% if q.shared %}
+            (Shared{% if user != q.user %} by {{ q.user.get_username }}{% endif %})
+            {% endif %}
+        </a>
+        {% endfor %}
+        {% else %}
+        <p class="dropdown-item small text-wrap">{% trans "No saved queries currently available. You can create one in the All Tickets page." %}</p>
+        {% endif %}
+      </div>
+    </li> -->
+    <li class="nav-item sidebar-item{% if 'submit' in request.path %} active{% endif %}">
+      <a class="nav-link" href="{% url 'helpdesk:submit' %}" data-toggle="tooltip" data-placement="right" title="{% trans 'New Ticket' %}">
+        <i class="fas fa-fw fa-plus-circle sidebar-icon"></i>
+        <span>{% trans "New Ticket" %}</span>
+      </a>
+    </li>
+    <li class="nav-item sidebar-item{% if 'my-tickets' in request.path %} active{% endif %}">
+      <a class="nav-link" href="{% url 'helpdesk:my-tickets' %}" data-toggle="tooltip" data-placement="right" title="{% trans 'My Tickets' %}">
+        <i class="fas fa-fw fa-tasks sidebar-icon"></i>
+        <span>{% trans "My Tickets" %}</span>
+      </a>
+    </li>
+    <li class="nav-item sidebar-item{% if 'reports' in request.path %} active{% endif %}">
+      <a class="nav-link" href="{% url 'helpdesk:report_index' %}" data-toggle="tooltip" data-placement="right" title="{% trans 'Reports' %}">
+        <i class="fas fa-fw fa-chart-area sidebar-icon"></i>
+        <span>{% trans "Reports" %}</span>
+      </a>
+    </li>
+    {% if helpdesk_settings.HELPDESK_KB_ENABLED %}
+    <li class="nav-item sidebar-item{% if 'kb' in request.path %} active{% endif %}">
+      <a class="nav-link" href="{% url 'helpdesk:kb_index' %}" data-toggle="tooltip" data-placement="right" title="{% trans 'Knowledgebase' %}">
+        <i class="fas fa-fw fa-database sidebar-icon"></i>
+        <span>{% trans "Knowledgebase" %}</span>
+      </a>
+    </li>
+    {% endif %}
+  {% else %}
+    {# Public menu #}
+    <li class="nav-item sidebar-item{% if request.path == '/' %} active{% endif %}">
+      <a class="nav-link" href="{% url 'helpdesk:home' %}" data-toggle="tooltip" data-placement="right" title="{% trans 'Homepage' %}">
+        <i class="fas fa-fw fa-home sidebar-icon"></i>
+        <span>{% trans "Homepage" %}</span>
+      </a>
+    </li>
+    <li class="nav-item sidebar-item{% if 'submit' in request.path %} active{% endif %}">
+      <a class="nav-link" href="{% url 'helpdesk:submit' %}" data-toggle="tooltip" data-placement="right" title="{% trans 'New Ticket' %}">
+        <i class="fas fa-fw fa-plus-circle sidebar-icon"></i>
+        <span>{% trans "New Ticket" %}</span>
+      </a>
+    </li>
+    {% if user.is_authenticated %}
+    <li class="nav-item sidebar-item{% if 'my-tickets' in request.path %} active{% endif %}">
+      <a class="nav-link" href="{% url 'helpdesk:my-tickets' %}" data-toggle="tooltip" data-placement="right" title="{% trans 'My Tickets' %}">
+        <i class="fas fa-fw fa-tasks sidebar-icon"></i>
+        <span>{% trans "My Tickets" %}</span>
+      </a>
+    </li>
+    {% endif %}
+    {% if helpdesk_settings.HELPDESK_KB_ENABLED %}
+    <li class="nav-item sidebar-item{% if 'kb' in request.path %} active{% endif %}">
+      <a class="nav-link" href="{% url 'helpdesk:kb_index' %}" data-toggle="tooltip" data-placement="right" title="{% trans 'Knowledgebase' %}">
+        <i class="fas fa-fw fa-database sidebar-icon"></i>
+        <span>{% trans "Knowledgebase" %}</span>
+      </a>
+    </li>
+    {% endif %}
+  {% endif %}
+</ul>
